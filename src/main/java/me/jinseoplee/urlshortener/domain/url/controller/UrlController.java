@@ -7,9 +7,9 @@ import me.jinseoplee.urlshortener.domain.url.dto.UrlCreateResponse;
 import me.jinseoplee.urlshortener.domain.url.service.UrlService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
 
 @RequiredArgsConstructor
 @RestController
@@ -24,5 +24,15 @@ public class UrlController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
+    }
+
+    @GetMapping("/{shortKey}")
+    public ResponseEntity<Void> redirect(@PathVariable String shortKey) {
+        String originalUrl = urlService.findOriginalUrl(shortKey);
+
+        return ResponseEntity
+                .status(HttpStatus.FOUND)
+                .location(URI.create(originalUrl))
+                .build();
     }
 }

@@ -6,6 +6,8 @@ import me.jinseoplee.urlshortener.domain.url.dto.UrlCreateResponse;
 import me.jinseoplee.urlshortener.domain.url.entity.Url;
 import me.jinseoplee.urlshortener.domain.url.repository.UrlRepository;
 import me.jinseoplee.urlshortener.domain.url.util.Base62Encoder;
+import me.jinseoplee.urlshortener.global.error.BusinessException;
+import me.jinseoplee.urlshortener.global.error.ErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,5 +26,13 @@ public class UrlService {
         url.assignShortKey(shortKey);
 
         return new UrlCreateResponse(shortKey);
+    }
+
+    @Transactional(readOnly = true)
+    public String findOriginalUrl(String shortKey) {
+        Url url = urlRepository.findByShortKey(shortKey)
+                .orElseThrow(() -> new BusinessException(ErrorCode.URL_NOT_FOUND));
+
+        return url.getOriginalUrl();
     }
 }
