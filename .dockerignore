@@ -1,0 +1,10 @@
+.git
+.gitignore
+.gitattributes
+.github
+
+.idea
+*.iml
+
+.env
+.env.*
