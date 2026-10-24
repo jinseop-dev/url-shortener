@@ -1,6 +1,8 @@
 package me.jinseoplee.urlshortener.url.service;
 
 import lombok.RequiredArgsConstructor;
+import me.jinseoplee.urlshortener.global.exception.BusinessException;
+import me.jinseoplee.urlshortener.global.exception.ErrorCode;
 import me.jinseoplee.urlshortener.url.dto.UrlCreateRequest;
 import me.jinseoplee.urlshortener.url.dto.UrlCreateResponse;
 import me.jinseoplee.urlshortener.url.entity.Url;
@@ -24,5 +26,15 @@ public class UrlService {
         url.assignShortKey(shortKey);
 
         return new UrlCreateResponse(shortKey);
+    }
+
+    @Transactional
+    public String getOriginalUrl(String shortKey) {
+        Url url = urlRepository.findByShortKey(shortKey)
+                .orElseThrow(() -> new BusinessException(ErrorCode.URL_NOT_FOUND));
+
+        url.increaseClickCount();
+
+        return url.getOriginalUrl();
     }
 }

@@ -1,5 +1,6 @@
 package me.jinseoplee.urlshortener.url.controller;
 
+import me.jinseoplee.urlshortener.global.exception.BusinessException;
 import me.jinseoplee.urlshortener.global.exception.ErrorCode;
 import me.jinseoplee.urlshortener.url.dto.UrlCreateRequest;
 import me.jinseoplee.urlshortener.url.dto.UrlCreateResponse;
@@ -15,9 +16,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UrlController.class)
 class UrlControllerTest {
@@ -76,5 +77,34 @@ class UrlControllerTest {
                 .andExpect(jsonPath("$.errors[0].field").value("originalUrl"))
                 .andExpect(jsonPath("$.errors[0].value").exists())
                 .andExpect(jsonPath("$.errors[0].reason").exists());
+    }
+
+    @Test
+    void redirect() throws Exception {
+        // given
+        String shortKey = "1";
+        String originalUrl = "https://example.com";
+
+        given(urlService.getOriginalUrl(shortKey)).willReturn(originalUrl);
+
+        // when & then
+        mockMvc.perform(get("/{shortKey}", shortKey))
+                .andExpect(status().isFound())
+                .andExpect(header().string("Location", originalUrl));
+    }
+
+    @Test
+    void redirect_notFound_returnsNotFound() throws Exception {
+        // given
+        String shortKey = "10000000";
+
+        ErrorCode errorCode = ErrorCode.URL_NOT_FOUND;
+        given(urlService.getOriginalUrl(shortKey)).willThrow(new BusinessException(errorCode));
+
+        // when & then
+        mockMvc.perform(get("/{shortKey}", shortKey))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(errorCode.getCode()))
+                .andExpect(jsonPath("$.message").value(errorCode.getMessage()));
     }
 }
