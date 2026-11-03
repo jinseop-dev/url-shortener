@@ -8,6 +8,13 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ErrorCode {
 
+    // URL
+    URL_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            "URL_001",
+            "존재하지 않는 URL입니다."
+    ),
+
     // Common
     INVALID_INPUT_VALUE(
             HttpStatus.BAD_REQUEST,
